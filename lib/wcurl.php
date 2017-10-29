@@ -2,39 +2,63 @@
 
 class wcurl extends \Prefab {
 
-	private $cb_login, $rests;
+	private $cb_login, $root, $tll, $cookie;
 
-	private $ttl = 60;
+	private $rests = array();
 
-	function __construct($cb_login = null, $request_root = null,  $ttl = 60) {
+	function __construct($root = null, $cb_login = null, $ttl = null) {
 		global $f3;
-		if(!strlen($f3->get('wcurl_cookie'))){
-			$f3->set('wcurl_cookie', $f3->get('TEMP').'wcurl_cookie.tmp' );
-			touch($f3->get('wcurl_cookie'));
+
+		$f3->exists('wcurl.root', $this->root);
+
+		if($root){
+			$this->root = $root;
 		}
+
+		self::setCookie();
+
+		$f3->exists('wcurl.cb_login', $this->cb_login);
+
 		if($cb_login){
 			$this->cb_login = $cb_login;
-			call_user_func($cb_login);
+			// call_user_func($cb_login);
 		}
+
+		if( !self::setTTL($ttl) && !self::setTTL($f3->get('wcurl.ttl')) ){
+			$this->ttl = 60;
+		}
+		if(is_array($f3->get('wcurl.rests')))
+			$f3->exists('wcurl.rests', $this->rests);
+
+
  	}
 
 	function __destruct(){
-		// if($this->ch){
-		// 	curl_close($this->ch);
-		// }
 	}
 
 	function setLogin($cb){
 		$this->cb_login = $cb;
 	}
-	function setIsLogged($cb){
-		$this->cb_islogged = $cb;
+	function setRoot($root){
+		$this->root = $root;
+		self::setCookie();
 	}
+	private function setCookie(){
+		global $f3;
+		$this->cookie = $f3->get('TEMP').'wcurl.cookie.'.
+						\Web::instance()->slug($this->root).
+						'.tmp';
+		touch($this->cookie);
+	}
+
 	function setRests($arr){
 		if(is_array($arr))
-			$this->rests = $arr;
+			$this->rests = array_merge($this->rests, $arr);
 	}
-	function setCachettl($int){
+	function getRests(){
+		return $this->rests;
+	}
+	function setTTL($int){
 		if ((is_int($int) || ctype_digit($int)) && (int)$int > 0 ) {
 			$this->ttl = $int;
 			return true;
@@ -42,7 +66,7 @@ class wcurl extends \Prefab {
 		return false;
 	}
 
-	function fillRESTS($url, $fill){
+	private function fillRESTS($url, $fill){
 		if(array_key_exists($url,$this->rests)){
 			$url = $this->rests[$url];
 		}
@@ -82,7 +106,9 @@ class wcurl extends \Prefab {
 		$value['fromcache'] = false;
 		return $request;
 	}
-	function post($url, $body = null){
+	function post($url, $body = null, $fill = null){
+
+		$url = self::fillRESTS($url, $fill);
 
 		if(is_array($body)){
 			$body = json_encode($body);
@@ -96,7 +122,7 @@ class wcurl extends \Prefab {
 		));
 	}
 
-	function curl_send($params = array(), $nested = false){
+	private function curl_send($params = array(), $nested = false){
 		global $f3;
 
 		$default = array(
@@ -105,11 +131,11 @@ class wcurl extends \Prefab {
 			CURLOPT_SSL_VERIFYPEER => true,
 			CURLOPT_SSL_VERIFYHOST => 2,
 			CURLOPT_FOLLOWLOCATION => true,
-			CURLOPT_COOKIEJAR	=>	realpath($f3->get('wcurl_cookie')),
-			CURLOPT_COOKIEFILE	=>	realpath($f3->get('wcurl_cookie')),
+			CURLOPT_COOKIEJAR	=>	realpath($this->cookie),
+			CURLOPT_COOKIEFILE	=>	realpath($this->cookie),
 		);
 
-		$url =	trim($f3->get('nimbus.root'),'/').
+		$url =	trim($this->root,'/').
 				'/'.trim($params[CURLOPT_URL],'/');
 
 		$setparams = $params;
@@ -153,7 +179,6 @@ class wcurl extends \Prefab {
 					break;
 			}
 		}
-
 		if($response){
 			$return = array('status' => $status,
 							'response' => $response,
