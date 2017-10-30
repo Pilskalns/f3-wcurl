@@ -2,6 +2,7 @@
     "name": "pilskalns/f3-wcurl",
     "description": "F3 Wrapper for cURL to talk with external REST API",
     "license": "GPL-3.0",
+    "keywords": ["F3", "Fat Free Framework", "curl", "API"],
     "authors": [
         {
             "name": "Andzs Pilskalns",
