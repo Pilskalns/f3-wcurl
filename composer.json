@@ -1,6 +1,6 @@
 {
     "name": "pilskalns/f3-wcurl",
-    "description": "Wrapper for cURL to talk with external REST API's for the PHP Fat-Free Framework",
+    "description": "F3 Wrapper for cURL to talk with external REST API",
     "license": "GPL-3.0",
     "authors": [
         {
