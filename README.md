@@ -11,27 +11,27 @@ Same way I want my code to interact with API's. Here you have remote site, URL's
 
 ### Configuration
 Acess the class for first time
-```
+``` php
 $wcurl = \wcurl::instance();
 // or with optional parameters, which can also be set later
 $wcurl = \wcurl::instance($remote_api_root,"yourClass::cb_do_login", $ttl);
 ```
 
 #### Set remote API root
-```
+``` php
 $wcurl->setRoot( "https://remote.site/api-root/v1/" );
 ```
 
 #### Set login callback function
 Function should be valid callback for `call_user_func()`
 
-```
+``` php
 $wcurl->setLogin( 'yourClass::cb_do_login' );
 ```
 If any request results in HTTP 401 or 403 code, `wcurl` calls Login callback function and then repeats original request. If again there is error, it is returned to original function result. `wcurl` stores cookies in temporary file unique to API root. This cookie file is included in every request.
 
 Login function **example**
-```
+``` php
 static function cb_do_login(){
 	$wcurl = \wcurl::instance();
 	$login = $wcurl->post("/login", array(
@@ -46,7 +46,7 @@ static function cb_do_login(){
 
 Integer, in seconds
 
-```
+``` php
 $wcurl->setTTL( 3600 );
 ```
 
@@ -54,13 +54,13 @@ $wcurl->setTTL( 3600 );
 
 #### GET
 
-```
+``` php
 $response = $wcurl->get( $url );
 ```
 
 #### POST
 
-```
+``` php
 $response = $wcurl->post( $url, $body );
 ```
 If body is array, it will be passed trough `json_encode`. Possible improvement to allow HTTP form serialization from array.
@@ -71,7 +71,7 @@ When constructing long remote URL's, it's easier to remember them by short keywo
 Sometimes these contain also unique parameters, which needs to be filled in per each request.
 
 To set named routes, pass simple key => value array. You can call this multiple times, with array being merged to already existing routes. I.e. from `.ini` configuration
-```
+``` php
 $wcurl->setRests( array(
 	'allmembers'	=> '/lists/members/all/pages',
 	'withVariable'	=> '/lists/members/%%memberID%%/pages',
@@ -82,7 +82,7 @@ URL variables are wrapped in two `%` from both sides.
 
 To use named route, pass it's name instead of full URL.
 
-```
+``` php
 $response = $wcurl->get( 'allmembers' );
 ```
 
@@ -90,11 +90,11 @@ $response = $wcurl->get( 'allmembers' );
 
 To fill existing URL either from your custom or trough `setRests()` available ones, pass `$key => $value` array as last parameter to method.
 
-```
+``` php
 $response = $wcurl->get( 'withVariable', array('memberID' => 'abcID') );
 ```
 or
-```
+``` php
 $wcurl->post(	'updateEmail',
 				array('email'=>'andzs@pilskalns.lv'),
 				array('memberID' =>'abcID')
@@ -107,7 +107,7 @@ If you need only occasionally call external API's, adding configuration from `be
 
 If you put all configuration in your main `ini` file, class can be initialized only on first required use of it. I.e. when your code decides to send get(). At that moment, if class is not registered in Prefab, it will be built from INI config exactly as needed.
 
-```
+``` ini
 [wcurl]
 root=http://mysite.api/v1
 ttl=3600
@@ -120,7 +120,7 @@ withVariable=/lists/members/%%memberID%%/pages
 
 ### Using with multiple API's
 When calling `\wcurl::instance()` it is built like singleton class, thus in any place in code, same instance is returned. To force fresh instance from class, use something like
-```
+``` php
 $apiTwo = new wcurl([$root] [,$cb_login] [,$ttl]);
 ```
 And there `$apiTwo` can be stored in F3 hive.
