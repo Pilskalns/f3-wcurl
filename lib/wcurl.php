@@ -66,7 +66,7 @@ class wcurl extends \Prefab {
 		return false;
 	}
 
-	private function fillRESTS($url, $fill){
+	function fillRESTS($url, $fill){
 		if(array_key_exists($url,$this->rests)){
 			$url = $this->rests[$url];
 		}
@@ -82,30 +82,29 @@ class wcurl extends \Prefab {
 		return $url;
 	}
 
-	function get($url, $fill = null, $usecache = true){
+	function get($url, $fill = null, $ttl = true){
 
 		$url = self::fillRESTS($url, $fill);
 
-		// TODO if URL array, return $url;
-
 		$cache = \Cache::instance();
-		$key = \Web::instance()->slug($url);
+		$key = \Web::instance()->slug($this->root.$url);
 
 
-		if ($usecache && $cache->exists('url_'.$key,$value)) {
+		if ($ttl && $cache->exists('url_'.$key,$value)) {
 			$value['fromcache'] = true;
-		    return $value; // bar
+		    return $value;
 		}
 		$request = $this->curl_send(array(
 				CURLOPT_URL => $url
 		));
-		if($usecache && (substr($request['status']['http_code'],0,1)==2) ){
-			$cache->set('url_'.$key, $request, $this->ttl);
+		if($ttl && (substr($request['status']['http_code'],0,1)==2) ){
+			$cache->set('url_'.$key, $request, (is_int($ttl)&&$ttl>0)?$ttl:$this->ttl);
 		}
 
 		$value['fromcache'] = false;
 		return $request;
 	}
+
 	function post($url, $body = null, $fill = null){
 
 		$url = self::fillRESTS($url, $fill);
