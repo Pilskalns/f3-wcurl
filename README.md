@@ -19,14 +19,14 @@ $wcurl = \wcurl::instance($remote_api_root,"yourClass::cb_do_login", $ttl);
 
 #### Set remote API root
 ``` php
-$wcurl->setRoot( "https://remote.site/api-root/v1/" );
+$wcurl->setRoot( string "https://remote.site/api-root/v1/" );
 ```
 
 #### Set login callback function
 Function should be valid callback for `call_user_func()`
 
 ``` php
-$wcurl->setLogin( 'yourClass::cb_do_login' );
+$wcurl->setLogin( callback 'yourClass::cb_do_login' );
 ```
 If any request results in HTTP 401 or 403 code, `wcurl` calls Login callback function and then repeats original request. If again there is error, it is returned to original function result. `wcurl` stores cookies in temporary file unique to API root. This cookie file is included in every request.
 
@@ -47,7 +47,32 @@ static function cb_do_login(){
 Integer, in seconds
 
 ``` php
-$wcurl->setTTL( 3600 );
+$wcurl->setTTL( int 3600 );
+```
+#### Set headers included in each request
+
+Some session-less API's require user/api password in each request header. Others need specify Content-type and/or Accept values
+
+[cURL valid array of strings](http://php.net/manual/en/function.curl-setopt.php) ["Header: value", "Another-Header: Value"]
+
+``` php
+$wcurl->setHeaders( array ['Accept:application/json, text/plain, */*'] );
+```
+or INI
+``` ini
+[wcurl]
+headers = "Header: value", "Another-Header: Value"
+```
+
+#### Set User Agent string
+
+``` php
+$wcurl->setUserAgent( 'Zeus was here' );
+```
+or INI
+``` ini
+[wcurl]
+useragent = Zeus was here
 ```
 
 ### How to use it
@@ -55,7 +80,7 @@ $wcurl->setTTL( 3600 );
 #### GET
 
 ``` php
-$response = $wcurl->get( string $url [, array $fill = null [, integer $ttl = true]] );
+$response = $wcurl->get( string $url [, array $fill = null [, (int|bool) $ttl = true]] );
 ```
 
 #### POST
@@ -97,10 +122,10 @@ $response = $wcurl->get( 'withVariable', array('memberID' => 'abcID') );
 ```
 or
 ``` php
-$wcurl->post(	'updateEmail',
-				array('email'=>'andzs@pilskalns.lv'),
-				array('memberID' =>'abcID')
-			);
+$wcurl->post('updateEmail',
+			array('email'=>'andzs@pilskalns.lv'),
+			array('memberID' =>'abcID')
+		);
 ```
 
 ### Using INI configuration

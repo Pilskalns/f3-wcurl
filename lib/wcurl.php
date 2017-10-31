@@ -2,9 +2,11 @@
 
 class wcurl extends \Prefab {
 
-	private $cb_login, $root, $tll, $cookie;
+	private $cb_login, $root, $tll, $cookie, $headers, $ua;
 
-	private $rests = array();
+	private $version = 'v0.1';
+
+	private $rests = [];
 
 	function __construct($root = null, $cb_login = null, $ttl = null) {
 		global $f3;
@@ -30,6 +32,12 @@ class wcurl extends \Prefab {
 		if(is_array($f3->get('wcurl.rests')))
 			$f3->exists('wcurl.rests', $this->rests);
 
+		if(is_array($f3->get('wcurl.headers')))
+			$f3->exists('wcurl.headers', $this->headers);
+
+		$this->ua = 'f3-wcurl '.$this->version;
+		if(is_string($f3->get('wcurl.useragent')))
+			$this->ua = $f3->get('wcurl.useragent');
 
  	}
 
@@ -58,12 +66,20 @@ class wcurl extends \Prefab {
 	function getRests(){
 		return $this->rests;
 	}
+	function setHeaders($arr){
+		if(is_array($arr))
+			$this->headers = $this->headers;
+	}
 	function setTTL($int){
 		if ((is_int($int) || ctype_digit($int)) && (int)$int > 0 ) {
 			$this->ttl = $int;
 			return true;
 		}
 		return false;
+	}
+	function setUserAgent($string){
+		if(is_string($string))
+			$this->ua = $string;
 	}
 
 	function fillRESTS($url, $fill){
@@ -116,7 +132,6 @@ class wcurl extends \Prefab {
 		return $this->curl_send(array(
 				CURLOPT_URL => $url,
 				CURLOPT_POST => true,
-				CURLOPT_HTTPHEADER	=> 	array('Content-Type: application/json' ),
 				CURLOPT_POSTFIELDS => $body
 		));
 	}
@@ -125,13 +140,14 @@ class wcurl extends \Prefab {
 		global $f3;
 
 		$default = array(
-			CURLOPT_USERAGENT => 'Zeus was here',
+			CURLOPT_USERAGENT => $this->ua,
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_SSL_VERIFYPEER => true,
 			CURLOPT_SSL_VERIFYHOST => 2,
 			CURLOPT_FOLLOWLOCATION => true,
 			CURLOPT_COOKIEJAR	=>	realpath($this->cookie),
 			CURLOPT_COOKIEFILE	=>	realpath($this->cookie),
+			CURLOPT_HTTP_VERSION=>	CURL_HTTP_VERSION_1_0,
 		);
 
 		$url =	trim($this->root,'/').
@@ -145,6 +161,15 @@ class wcurl extends \Prefab {
 
 		curl_setopt_array($ch, $default);
 		curl_setopt_array($ch, $setparams);
+
+		if($this->headers){
+			curl_setopt($ch, CURLOPT_HTTPHEADER, $this->headers);
+			curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+		}
+		pre(json_encode($nested));
+		pre($url);
+		// pre(realpath($this->cookie));
+		// pre($this->headers);
 
 		$headers = [];
 		curl_setopt($ch, CURLOPT_HEADERFUNCTION,
@@ -180,15 +205,22 @@ class wcurl extends \Prefab {
 		}
 		if($response){
 			$return = array('status' => $status,
-							'response' => $response,
+							'response' => self::is_json($response)?json_decode($response, true):$response,
 							'headers' => $headers );
 		} else {
 			$return = array('error'=>'Error: "'. curl_error($ch).
-									'" - Code: '.curl_errno($ch)	);
+									'" - Code: '.curl_errno($ch),
+							'status' => $status,
+							'headers' => $headers );
 		}
 
 		curl_close($ch);
 		return $return;
 
+	}
+
+	function is_json($str) {
+	    $json = json_decode($str);
+	    return $json && $str != $json;
 	}
 }
