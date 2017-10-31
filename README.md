@@ -55,15 +55,17 @@ $wcurl->setTTL( 3600 );
 #### GET
 
 ``` php
-$response = $wcurl->get( $url );
+$response = $wcurl->get( string $url [, array $fill = null [, integer $ttl = true]] );
 ```
 
 #### POST
 
 ``` php
-$response = $wcurl->post( $url, $body );
+$response = $wcurl->post( string $url, (array|string) $body [, array $fill = null ]);
 ```
+
 If body is array, it will be passed trough `json_encode`. Possible improvement to allow HTTP form serialization from array.
+
 #### Using named routes (rests)
 
 When constructing long remote URL's, it's easier to remember them by short keywords, especially if they are called from multiple places. Like `allmembers` instead of `/lists/members/all/pages`.
@@ -126,10 +128,7 @@ $apiTwo = new wcurl([$root] [,$cb_login] [,$ttl]);
 And there `$apiTwo` can be stored in F3 hive.
 
 
-There's a lot to improve, currently this automatically support only 401/403 login callback, but could have optional hooks for every HTTP status.
-
-Feedback, PR's and suggestions welcome.
-
+There's a lot to improve, but currently will be making features I need. If something not possible for your use case, submit an issue or even PR.
 
 Though this plugin could be developed solely as standalone class/tool, it will be used in context of [Fat Free Framework](https://fatfreeframework.com) (F3), so naturally got few cool F3 features as dependencies - `Prefab`, `Cache` and `Web`.
 
