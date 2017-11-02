@@ -30,14 +30,25 @@ $wcurl->setLogin( callback 'yourClass::cb_do_login' );
 ```
 If any request results in HTTP 401 or 403 code, `wcurl` calls Login callback function and then repeats original request. If again there is error, it is returned to original function result. `wcurl` stores cookies in temporary file unique to API root. This cookie file is included in every request.
 
+Callback must return true, if login success, otherwise it would fail to auto-repeat request after auth success.
+
+**N!B! If login doesn't works, but still `return true`, it can cause `request->login->request->login...` infinitive loop**
+
 Login function **example**
 ``` php
 static function cb_do_login(){
 	$wcurl = \wcurl::instance();
+
 	$login = $wcurl->post("/login", array(
 				'login'=> 'my_user',
 				'password'=> 'covfefe' )
 			);
+	if($login['status']['http_code']==200){
+		return true;
+	}
+
+	// or
+	$wcurl->setHeaders( ['Authentication:xx-bla-bla-c0vfefe-secret'] );
 }
 ```
 
@@ -58,21 +69,11 @@ Some session-less API's require user/api password in each request header. Others
 ``` php
 $wcurl->setHeaders( array ['Accept:application/json, text/plain, */*'] );
 ```
-or INI
-``` ini
-[wcurl]
-headers = "Header: value", "Another-Header: Value"
-```
 
 #### Set User Agent string
 
 ``` php
 $wcurl->setUserAgent( 'Zeus was here' );
-```
-or INI
-``` ini
-[wcurl]
-useragent = Zeus was here
 ```
 
 ### How to use it
@@ -113,7 +114,7 @@ To use named route, pass it's name instead of full URL.
 $response = $wcurl->get( 'allmembers' );
 ```
 
-### Fill / URLs with variables variables
+### Fill / URLs with variables
 
 To fill existing URL either from your custom or trough `setRests()` available ones, pass `$key => $value` array as last parameter to method.
 
@@ -139,6 +140,8 @@ If you put all configuration in your main `ini` file, class can be initialized o
 root=http://mysite.api/v1
 ttl=3600
 cb_login=yourClass::cb_do_login
+useragent = Zeus was here
+headers = "Header: value", "Another-Header: Value"
 
 [wcurl.rests]
 allmembers=/lists/members/all/pages
@@ -150,7 +153,7 @@ When calling `\wcurl::instance()` it is built like singleton class, thus in any 
 ``` php
 $apiTwo = new wcurl([$root] [,$cb_login] [,$ttl]);
 ```
-And there `$apiTwo` can be stored in F3 hive.
+And then `$apiTwo` can be stored in F3 hive.
 
 
 There's a lot to improve, but currently will be making features I need. If something not possible for your use case, submit an issue or even PR.

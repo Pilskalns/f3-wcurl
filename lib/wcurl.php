@@ -4,7 +4,7 @@ class wcurl extends \Prefab {
 
 	private $cb_login, $root, $tll, $cookie, $headers, $ua;
 
-	private $version = 'v0.1';
+	private $version = 'v0.2';
 
 	private $rests = [];
 
@@ -23,17 +23,22 @@ class wcurl extends \Prefab {
 
 		if($cb_login){
 			$this->cb_login = $cb_login;
-			// call_user_func($cb_login);
 		}
 
 		if( !self::setTTL($ttl) && !self::setTTL($f3->get('wcurl.ttl')) ){
 			$this->ttl = 60;
 		}
 		if(is_array($f3->get('wcurl.rests')))
-			$f3->exists('wcurl.rests', $this->rests);
+			$this->rests = $f3->get('wcurl.rests');
 
-		if(is_array($f3->get('wcurl.headers')))
-			$f3->exists('wcurl.headers', $this->headers);
+		if( is_string($f3->get('wcurl.headers')) ){
+			$this->headers = [trim($f3->get('wcurl.headers'),'\'\"')];
+		} else if (is_array($f3->get('wcurl.headers'))){
+			foreach ($f3->get('wcurl.headers') as $head ) {
+				$this->headers[] = trim($head,'\'\"');
+			}
+		}
+			// $f3->exists('wcurl.headers', $this->headers);
 
 		$this->ua = 'f3-wcurl '.$this->version;
 		if(is_string($f3->get('wcurl.useragent')))
@@ -123,12 +128,12 @@ class wcurl extends \Prefab {
 
 	function post($url, $body = null, $fill = null){
 
+
 		$url = self::fillRESTS($url, $fill);
 
 		if(is_array($body)){
 			$body = json_encode($body);
 		}
-
 		return $this->curl_send(array(
 				CURLOPT_URL => $url,
 				CURLOPT_POST => true,
@@ -138,6 +143,7 @@ class wcurl extends \Prefab {
 
 	private function curl_send($params = array(), $nested = false){
 		global $f3;
+		set_time_limit(30);
 
 		$default = array(
 			CURLOPT_USERAGENT => $this->ua,
@@ -162,14 +168,10 @@ class wcurl extends \Prefab {
 		curl_setopt_array($ch, $default);
 		curl_setopt_array($ch, $setparams);
 
-		if($this->headers){
+		if(is_array($this->headers)){
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $this->headers);
 			curl_setopt($ch, CURLINFO_HEADER_OUT, true);
 		}
-		pre(json_encode($nested));
-		pre($url);
-		// pre(realpath($this->cookie));
-		// pre($this->headers);
 
 		$headers = [];
 		curl_setopt($ch, CURLOPT_HEADERFUNCTION,
@@ -178,13 +180,11 @@ class wcurl extends \Prefab {
 				$header = explode(':', $header, 2);
 				if (count($header) < 2) // ignore invalid headers
 					return $len;
-
 				$name = strtolower(trim($header[0]));
 				if (!array_key_exists($name, $headers))
 					$headers[$name] = [trim($header[1])];
 				else
 					$headers[$name][] = trim($header[1]);
-
 				return $len;
 			}
 		);
@@ -197,8 +197,8 @@ class wcurl extends \Prefab {
 				case 401:
 				case 403:
 					if($this->cb_login){
-						call_user_func($this->cb_login);
-						return $this->curl_send($params, true);
+						if(call_user_func($this->cb_login))
+							return $this->curl_send($params, true);
 					}
 					break;
 			}
