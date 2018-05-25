@@ -2,7 +2,8 @@
 
 class wcurl extends \Prefab {
 
-	private $cb_login, $root, $tll, $cookie, $headers, $ua;
+	private $cb_login, $root, $tll, $cookie, $headers, $ua,
+			$basicauth, $followLocation, $queryToken;
 
 	private $version = 'v0.2';
 
@@ -24,6 +25,11 @@ class wcurl extends \Prefab {
 		if($cb_login){
 			$this->cb_login = $cb_login;
 		}
+
+		if(!$f3->exists('wcurl.followlocation', $this->$followLocation)){
+			$this->$followLocation = true;
+		};
+
 
 		if( !self::setTTL($ttl) && !self::setTTL($f3->get('wcurl.ttl')) ){
 			$this->ttl = 60;
@@ -63,6 +69,9 @@ class wcurl extends \Prefab {
 						'.tmp';
 		touch($this->cookie);
 	}
+	function getCookie(){
+		return $this->cookie;
+	}
 
 	function setRests($arr){
 		if(is_array($arr))
@@ -73,7 +82,11 @@ class wcurl extends \Prefab {
 	}
 	function setHeaders($arr){
 		if(is_array($arr))
-			$this->headers = $this->headers;
+			$this->headers = $arr;
+	}
+	function setBasicAuth($string){
+		// if(strlen($string))
+			$this->basicauth = $string;
 	}
 	function setTTL($int){
 		if ((is_int($int) || ctype_digit($int)) && (int)$int > 0 ) {
@@ -85,6 +98,16 @@ class wcurl extends \Prefab {
 	function setUserAgent($string){
 		if(is_string($string))
 			$this->ua = $string;
+	}
+
+	function setFollowLocation($bool){
+		if(is_bool ($bool))
+			$this->followLocation = $bool;
+	}
+
+	function setQueryToken($key, $token){
+		if(is_string($key) && is_string($token))
+			$this->queryToken = $key.'='.$token;
 	}
 
 	function fillRESTS($url, $fill){
@@ -126,13 +149,17 @@ class wcurl extends \Prefab {
 		return $request;
 	}
 
-	function post($url, $body = null, $fill = null){
+	function post($url, $body = null, $fill = null, $encodeJSON = true){
 
 
 		$url = self::fillRESTS($url, $fill);
 
 		if(is_array($body)){
-			$body = json_encode($body);
+			if($encodeJSON){
+				$body = json_encode($body);
+			} else {
+				$body = http_build_query($body);
+			}
 		}
 		return $this->curl_send(array(
 				CURLOPT_URL => $url,
@@ -145,19 +172,28 @@ class wcurl extends \Prefab {
 		global $f3;
 		set_time_limit(30);
 
+		$cache = \Cache::instance();
+		$key = \Web::instance()->slug($this->root.$url);
+
 		$default = array(
 			CURLOPT_USERAGENT => $this->ua,
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_SSL_VERIFYPEER => true,
 			CURLOPT_SSL_VERIFYHOST => 2,
-			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_FOLLOWLOCATION => $this->followLocation,
 			CURLOPT_COOKIEJAR	=>	realpath($this->cookie),
 			CURLOPT_COOKIEFILE	=>	realpath($this->cookie),
 			CURLOPT_HTTP_VERSION=>	CURL_HTTP_VERSION_1_0,
 		);
 
+		if (strlen($this->basicauth)){
+			$default[CURLOPT_USERPWD]=$this->basicauth;
+			// curl_setopt($process, CURLOPT_USERPWD, $username . ":" . $password)
+		}
+
 		$url =	trim($this->root,'/').
-				'/'.trim($params[CURLOPT_URL],'/');
+				'/'.trim($params[CURLOPT_URL],'/').
+				($this->queryToken?'?'.$this->queryToken:'');
 
 		$setparams = $params;
 		unset($setparams[CURLOPT_URL]);
