@@ -5,7 +5,7 @@ class wcurl extends \Prefab {
 	private $cb_login, $root, $tll, $cookie, $headers, $ua,
 			$basicauth, $followLocation, $queryToken;
 
-	private $version = 'v0.2';
+	private $version = 'v0.3';
 
 	private $rests = [];
 
