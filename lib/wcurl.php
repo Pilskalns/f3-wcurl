@@ -239,7 +239,7 @@ class wcurl extends \Prefab {
 					break;
 			}
 		}
-		if($response){
+		if($response !== false){
 			$return = array('status' => $status,
 							'response' => self::is_json($response)?json_decode($response, true):$response,
 							'headers' => $headers );
