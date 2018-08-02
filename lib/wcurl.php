@@ -126,6 +126,8 @@ class wcurl extends \Prefab {
 		return $url;
 	}
 
+	// HTTP request methods
+
 	function get($url, $fill = null, $ttl = true){
 
 		$url = self::fillRESTS($url, $fill);
@@ -167,6 +169,27 @@ class wcurl extends \Prefab {
 				CURLOPT_POSTFIELDS => $body
 		));
 	}
+
+	function delete($url, $body = null, $fill = null, $encodeJSON = true){
+
+
+		$url = self::fillRESTS($url, $fill);
+
+		if(is_array($body)){
+			if($encodeJSON){
+				$body = json_encode($body);
+			} else {
+				$body = http_build_query($body);
+			}
+		}
+		return $this->curl_send(array(
+				CURLOPT_URL => $url,
+				CURLOPT_POSTFIELDS => $body,
+				CURLOPT_CUSTOMREQUEST => 'DELETE'
+		));
+	}
+
+	// HTTP request methods end
 
 	private function curl_send($params = array(), $nested = false){
 		global $f3;
@@ -254,6 +277,8 @@ class wcurl extends \Prefab {
 		return $return;
 
 	}
+
+	// helpers
 
 	function is_json($str) {
 	    $json = json_decode($str);
