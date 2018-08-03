@@ -80,12 +80,14 @@ class wcurl extends \Prefab {
 	function getRests(){
 		return $this->rests;
 	}
+	function getHeaders(){
+		return $this->headers;
+	}
 	function setHeaders($arr){
 		if(is_array($arr))
 			$this->headers = $arr;
 	}
 	function setBasicAuth($string){
-		// if(strlen($string))
 			$this->basicauth = $string;
 	}
 	function setTTL($int){
