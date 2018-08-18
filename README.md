@@ -14,12 +14,7 @@ Acess the class for first time
 ``` php
 $wcurl = \wcurl::instance();
 // or with optional parameters, which can also be set later
-$wcurl = \wcurl::instance($remote_api_root,"yourClass::cb_do_login", $ttl);
-```
-
-#### Set remote API root
-``` php
-$wcurl->setRoot( string "https://remote.site/api-root/v1/" );
+$wcurl = \wcurl::instance([$iniName | $optionsArray]);
 ```
 
 #### Set login callback function
@@ -48,18 +43,10 @@ static function cb_do_login(){
 	}
 
 	// or
-	$wcurl->setHeaders( ['Authentication:xx-bla-bla-c0vfefe-secret'] );
+	$wcurl->setBasicAuth($user, $password);
 }
 ```
 
-
-#### Set default response cache expiration time
-
-Integer, in seconds
-
-``` php
-$wcurl->setTTL( int 3600 );
-```
 #### Set headers included in each request
 
 Some session-less API's require user/api password in each request header. Others need specify Content-type and/or Accept values
@@ -151,7 +138,7 @@ withVariable=/lists/members/%%memberID%%/pages
 ### Using with multiple API's
 When calling `\wcurl::instance()` it is built like singleton class, thus in any place in code, same instance is returned. To force fresh instance from class, use something like
 ``` php
-$apiTwo = new wcurl([$root] [,$cb_login] [,$ttl]);
+$apiTwo = new wcurl([$iniName | $optionsArray]);
 ```
 And then `$apiTwo` can be stored in F3 hive.
 

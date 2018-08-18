@@ -1,136 +1,40 @@
 <?php
-
+/**
+ * PHP cURL wrapper tailored for use within F3 framework
+ */
 class wcurl extends \Prefab {
-
-	private $cb_login, $root, $tll, $cookie, $headers, $ua,
-			$basicauth, $followLocation, $queryToken;
 
 	private $version = 'v0.3';
 
+	private $cb_login, $root, $tll, $cookie, $headers, $ua,
+			$basicauth, $queryToken;
+
+	private $curlopt = [];
 	private $rests = [];
 
-	function __construct($root = null, $cb_login = null, $ttl = null) {
+	function __construct($identity = 'wcurl') {
 		global $f3;
 
-		$f3->exists('wcurl.root', $this->root);
-
-		if($root){
-			$this->root = $root;
+		if ( is_string($identity) && $f3->exists($identity) && is_array($f3->get($identity)) ){
+			$options = $f3->get($identity);
+		} else if( is_array($identity) ) {
+			$options = $identity;
+		} else {
+			$f3->error(500, "Passed wcurl options array not found!");
 		}
 
-		self::setCookie();
+		self::setOptions($options);
 
-		$f3->exists('wcurl.cb_login', $this->cb_login);
-
-		if($cb_login){
-			$this->cb_login = $cb_login;
-		}
-
-		if(!$f3->exists('wcurl.followlocation', $this->$followLocation)){
-			$this->$followLocation = true;
-		};
-
-
-		if( !self::setTTL($ttl) && !self::setTTL($f3->get('wcurl.ttl')) ){
-			$this->ttl = 60;
-		}
-		if(is_array($f3->get('wcurl.rests')))
-			$this->rests = $f3->get('wcurl.rests');
-
-		if( is_string($f3->get('wcurl.headers')) ){
-			$this->headers = [trim($f3->get('wcurl.headers'),'\'\"')];
-		} else if (is_array($f3->get('wcurl.headers'))){
-			foreach ($f3->get('wcurl.headers') as $head ) {
-				$this->headers[] = trim($head,'\'\"');
-			}
-		}
-			// $f3->exists('wcurl.headers', $this->headers);
-
-		$this->ua = 'f3-wcurl '.$this->version;
-		if(is_string($f3->get('wcurl.useragent')))
-			$this->ua = $f3->get('wcurl.useragent');
-
- 	}
-
-	function __destruct(){
-	}
-
-	function setLogin($cb){
-		$this->cb_login = $cb;
-	}
-	function setRoot($root){
-		$this->root = $root;
-		self::setCookie();
-	}
-	private function setCookie(){
-		global $f3;
-		$this->cookie = $f3->get('TEMP').'wcurl.cookie.'.
-						\Web::instance()->slug($this->root).
-						'.tmp';
-		touch($this->cookie);
-	}
-	function getCookie(){
-		return $this->cookie;
-	}
-
-	function setRests($arr){
-		if(is_array($arr))
-			$this->rests = array_merge($this->rests, $arr);
-	}
-	function getRests(){
-		return $this->rests;
-	}
-	function getHeaders(){
-		return $this->headers;
-	}
-	function setHeaders($arr){
-		if(is_array($arr))
-			$this->headers = $arr;
-	}
-	function setBasicAuth($string){
-			$this->basicauth = $string;
-	}
-	function setTTL($int){
-		if ((is_int($int) || ctype_digit($int)) && (int)$int > 0 ) {
-			$this->ttl = $int;
-			return true;
-		}
-		return false;
-	}
-	function setUserAgent($string){
-		if(is_string($string))
-			$this->ua = $string;
-	}
-
-	function setFollowLocation($bool){
-		if(is_bool ($bool))
-			$this->followLocation = $bool;
-	}
-
-	function setQueryToken($key, $token){
-		if(is_string($key) && is_string($token))
-			$this->queryToken = $key.'='.$token;
-	}
-
-	function fillRESTS($url, $fill){
-		if(array_key_exists($url,$this->rests)){
-			$url = $this->rests[$url];
-		}
-		if(is_null($fill))
-			return $url;
-
-		foreach ($fill as $key => $value) {
-			$url = str_replace('%%'.$key.'%%', $value, $url);
-		}
-
-		// TODO regex search for unreplaced ID's and return in error message
-
-		return $url;
-	}
-
-	// HTTP request methods
-
-	function get($url, $fill = null, $ttl = true){
+	 }
+	 
+	 /**
+	 * HTTP GET method
+	 * 
+	 * @param string		$url	Relative or named URL
+	 * @param mixed			$fill	Array of url params to fill in
+	 * @param mixed			$ttl	How long to cache response
+	 */
+	public function get($url, $fill = null, $ttl = true){
 
 		$url = self::fillRESTS($url, $fill);
 
@@ -153,6 +57,15 @@ class wcurl extends \Prefab {
 		return $request;
 	}
 
+	/**
+	 * HTTP POST method
+	 *
+	 * @param string $url
+	 * @param array $body
+	 * @param array $fill
+	 * @param boolean $encodeJSON
+	 * @return array
+	 */
 	function post($url, $body = null, $fill = null, $encodeJSON = true){
 
 
@@ -172,6 +85,15 @@ class wcurl extends \Prefab {
 		));
 	}
 
+	/**
+	 * HTTP DELETE method
+	 *
+	 * @param string $url
+	 * @param array $body
+	 * @param array $fill
+	 * @param boolean $encodeJSON
+	 * @return array
+	 */
 	function delete($url, $body = null, $fill = null, $encodeJSON = true){
 
 
@@ -191,21 +113,121 @@ class wcurl extends \Prefab {
 		));
 	}
 
+	/**
+	 * Change wcurl options by passing array of them. Will merge with existing config.
+	 * 
+	 * For initial configuration use new \wcurl
+	 *
+	 * @param array $options
+	 */
+	public function setOptions($options){
+		global $f3;
+
+		if(array_key_exists('root', $options)) $this->root = $options['root'];
+		self::setCookie();
+
+		pre($options);
+		
+		
+		if(array_key_exists('cb_login', $options)) $this->cb_login = $options['cb_login'];
+
+		if( !self::setTTL($options['ttl']) ){
+			$this->ttl = 60;
+		}
+
+		if(is_array($options['rests']))
+			$this->rests = $options['rests'];
+
+		if(is_array($options['curlopt']))
+			$this->curlopt = $options['curlopt'];
+
+		if( is_string($options['headers']) ){
+			$this->headers = [trim($options['headers'],'\'\"')];
+		} else if ( is_array($options['headers']) ){
+			foreach ($options['headers'] as $head ) {
+				$this->headers[] = trim($head,'\'\"');
+			}
+		}
+
+		if(is_string($options['useragent'])) {
+			$this->ua = $options['useragent'];
+		} else {
+			$this->ua = 'f3-wcurl '.$this->version;
+		}
+	}
+
 	// HTTP request methods end
+
+	/**
+	  * Set callback function to handle authentication
+	  *
+	  * If any request results in HTTP 401 or 403 code, `wcurl` calls Login callback function and then repeats original request. If again there is error, it is returned to original function result. `wcurl` stores cookies in temporary file unique to API root. This cookie file is included in every request.
+	  * Callback must return true, if login success, otherwise it would fail to auto-repeat request after auth success.
+	  *
+	  * **N!B! If login doesn't works, but still `return true`, it can cause `request->login->request->login...` infinitive loop**
+	  *
+	  * @param string $cb should be valid callback for `call_user_func()`
+	  */
+	public function setLogin($cb){
+		$this->cb_login = $cb;
+	}
+
+	private function setCookie(){
+		global $f3;
+		$this->cookie = $f3->get('TEMP').'wcurl.cookie.'.
+						\Web::instance()->slug($this->root).
+						'.tmp';
+		touch($this->cookie);
+	}
+
+	/**
+	 * Set Basic Authentication
+	 *
+	 * @param string $user
+	 * @param string $password
+	 */
+	public function setBasicAuth($user, $password){
+			$this->basicauth = $user.':'.$password;
+	}
+	private function setTTL($int){
+		if ((is_int($int) || ctype_digit($int)) && (int)$int > 0 ) {
+			$this->ttl = $int;
+			return true;
+		}
+		return false;
+	}
+
+	function setQueryToken($key, $value){
+		if(is_string($key) && is_string($value))
+			$this->queryToken = $key.'='.$value;
+	}
+
+	private function fillRESTS($url, $fill){
+		if(array_key_exists($url,$this->rests)){
+			$url = $this->rests[$url];
+		}
+		if(is_null($fill))
+			return $url;
+
+		foreach ($fill as $key => $value) {
+			$url = str_replace('%%'.$key.'%%', $value, $url);
+		}
+
+		// TODO regex search for unreplaced ID's and return in error message
+
+		return $url;
+	}
 
 	private function curl_send($params = array(), $nested = false){
 		global $f3;
 		set_time_limit(30);
-
-		$cache = \Cache::instance();
-		$key = \Web::instance()->slug($this->root.$url);
 
 		$default = array(
 			CURLOPT_USERAGENT => $this->ua,
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_SSL_VERIFYPEER => true,
 			CURLOPT_SSL_VERIFYHOST => 2,
-			CURLOPT_FOLLOWLOCATION => $this->followLocation,
+			CURLOPT_FOLLOWLOCATION => true,
 			CURLOPT_COOKIEJAR	=>	realpath($this->cookie),
 			CURLOPT_COOKIEFILE	=>	realpath($this->cookie),
 			CURLOPT_HTTP_VERSION=>	CURL_HTTP_VERSION_1_0,
@@ -213,7 +235,6 @@ class wcurl extends \Prefab {
 
 		if (strlen($this->basicauth)){
 			$default[CURLOPT_USERPWD]=$this->basicauth;
-			// curl_setopt($process, CURLOPT_USERPWD, $username . ":" . $password)
 		}
 
 		$url =	trim($this->root,'/').
@@ -250,6 +271,10 @@ class wcurl extends \Prefab {
 			}
 		);
 
+		foreach( $this->curlopt as $opt=>$val ){
+			curl_setopt($ch, constant($opt), $val);
+		}
+
 		$response = curl_exec($ch);
 		$status = curl_getinfo($ch);
 
@@ -282,7 +307,7 @@ class wcurl extends \Prefab {
 
 	// helpers
 
-	function is_json($str) {
+	private function is_json($str) {
 	    $json = json_decode($str);
 	    return $json && $str != $json;
 	}
