@@ -126,7 +126,6 @@ class wcurl extends \Prefab {
 		if(array_key_exists('root', $options)) $this->root = $options['root'];
 		self::setCookie();
 
-		pre($options);
 		
 		
 		if(array_key_exists('cb_login', $options)) $this->cb_login = $options['cb_login'];
@@ -154,6 +153,23 @@ class wcurl extends \Prefab {
 		} else {
 			$this->ua = 'f3-wcurl '.$this->version;
 		}
+	}
+
+	/**
+	 * Return current object configuration
+	 * 
+	 * Should contain all config used with set* functions
+	 */
+	public function getOptions(){
+		$options = [];
+		$options['root']=$this->root;
+		$options['cb_login']=$this->cb_login;
+		$options['ttl']=$this->ttl;
+		$options['rests']=$this->rests;
+		$options['curlopt']=$this->curlopt;
+		$options['headers']=$this->headers;
+		$options['useragent']=$this->ua;
+		return $options;
 	}
 
 	// HTTP request methods end

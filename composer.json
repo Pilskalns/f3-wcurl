@@ -23,6 +23,7 @@
 		"classmap": ["lib/"]
 	},
     "require-dev": {
-        "cvuorinen/phpdoc-markdown-public": "^0.2.0"
+        "cvuorinen/phpdoc-markdown-public": "^0.2.0",
+        "bcosca/fatfree-core": "^3.6"
     }
 }
