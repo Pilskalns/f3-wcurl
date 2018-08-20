@@ -1,4 +1,8 @@
 # F3-wcurl
+
+[![Master Status](https://travis-ci.com/Pilskalns/f3-wcurl.svg?branch=master)](https://travis-ci.com/Pilskalns/f3-wcurl)
+[![Dev Status](https://travis-ci.com/Pilskalns/f3-wcurl.svg?branch=dev)](https://travis-ci.com/Pilskalns/f3-wcurl)
+
 F3 Wrapper for cURL to talk with external REST API. Handles authentication and response caching.
 
 ##### Preface
