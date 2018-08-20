@@ -1,13 +1,13 @@
 <?php
 
 
-require_once("../vendor/autoload.php");
-require_once("../helpers.php");
+require_once("vendor/autoload.php");
+require_once("helpers.php");
 
 // Set up
 $test=new Test;
 $f3 = Base::instance();
-$f3->config('tests.ini');
+$f3->config('tests/tests.ini');
 
 // TEST: load class
 $test->expect(
