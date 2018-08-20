@@ -86,9 +86,9 @@ $test->expect(
 $error = false;
 foreach ($test->results() as $result) {
     if ($result['status'])
-        pre('Pass: '.$result['text']);
+        echo 'Pass: '.$result['text'].PHP_EOL;
     else {
-        pre('FAIL: '.$result['text'].' ('.$result['source'].')');
+        echo 'FAIL: '.$result['text'].' ('.$result['source'].')'.PHP_EOL;
         $error = true;
     }
 }
