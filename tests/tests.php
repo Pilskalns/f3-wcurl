@@ -82,11 +82,15 @@ $test->expect(
 );
 
 
-
 // Display the results; not MVC but let's keep it simple
+$error = false;
 foreach ($test->results() as $result) {
     if ($result['status'])
         pre('Pass: '.$result['text']);
-    else
+    else {
         pre('FAIL: '.$result['text'].' ('.$result['source'].')');
+        $error = true;
+    }
 }
+if($error)
+    exit(255);
