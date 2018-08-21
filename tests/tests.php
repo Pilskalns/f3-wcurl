@@ -34,7 +34,7 @@ foreach($initConfig as $key => $value){
         array_key_exists($key, $buildConfig) &&
         gettype($value)===gettype($buildConfig[$key]) &&
         $value===$buildConfig[$key],
-        "'$key' configured as expected"
+        "Option '$key' configured as expected"
     );
 }
 

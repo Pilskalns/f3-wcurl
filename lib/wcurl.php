@@ -6,7 +6,7 @@ class wcurl extends \Prefab {
 
 	private $version = 'v0.3';
 
-	private $cb_login, $root, $tll, $cookie, $headers, $ua,
+	private $cb_login, $root, $tll, $cookie, $headers, $useragent,
 			$basicauth, $queryToken;
 
 	private $curlopt = [];
@@ -126,8 +126,6 @@ class wcurl extends \Prefab {
 		if(array_key_exists('root', $options)) $this->root = $options['root'];
 		self::setCookie();
 
-		
-		
 		if(array_key_exists('cb_login', $options)) $this->cb_login = $options['cb_login'];
 
 		if( !self::setTTL($options['ttl']) ){
@@ -145,9 +143,9 @@ class wcurl extends \Prefab {
 		}
 
 		if(is_string($options['useragent'])) {
-			$this->ua = $options['useragent'];
+			$this->useragent = $options['useragent'];
 		} else {
-			$this->ua = 'f3-wcurl '.$this->version;
+			$this->useragent = 'f3-wcurl '.$this->version;
 		}
 	}
 
@@ -164,8 +162,41 @@ class wcurl extends \Prefab {
 		$options['rests']=$this->rests;
 		$options['curlopt']=$this->curlopt;
 		$options['headers']=$this->headers;
-		$options['useragent']=$this->ua;
+		$options['useragent']=$this->useragent;
 		return $options;
+	}
+
+	/**
+	 * Clear one or more settings
+	 * 
+	 * Can be passed as single option name or array of strings
+	 *
+	 * @param string|array $options
+	 */
+	public function clearOptions($options){
+		if(is_string($options))
+			$options = [$options];
+
+		foreach($options as $opt){
+			switch($opt){
+				case 'root':
+					$this->{$opt}=null;
+					self::setCookie();
+					break;
+				case 'cb_login':
+				case 'tll':
+				case 'cookie':
+				case 'useragent':
+				case 'basicauth':
+				case 'queryToken':
+					$this->{$opt}=null;
+					break;
+				case 'curlopt':
+				case 'rests':
+					$this->{$opt}=[];
+					break;
+			}
+		}
 	}
 
 	// HTTP request methods end
@@ -235,7 +266,7 @@ class wcurl extends \Prefab {
 		set_time_limit(30);
 
 		$default = array(
-			CURLOPT_USERAGENT => $this->ua,
+			CURLOPT_USERAGENT => $this->useragent,
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_SSL_VERIFYPEER => true,
 			CURLOPT_SSL_VERIFYHOST => 2,
