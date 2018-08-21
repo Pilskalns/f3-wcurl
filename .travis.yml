@@ -12,7 +12,7 @@ after_failure:
   # - php -i
   # - cat /tmp/php-error.log
 
-script: php -d display_errors tests/tests.php
+script: php -d display_errors=on tests/tests.php
 
 notifications:
    on_success: never
