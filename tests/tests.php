@@ -1,5 +1,8 @@
 <?php
 
+ini_set("log_errors", 1);
+ini_set("error_log", "/tmp/php-error.log");
+error_log( "Hello, errors!" );
 
 require_once("vendor/autoload.php");
 require_once("helpers.php");
