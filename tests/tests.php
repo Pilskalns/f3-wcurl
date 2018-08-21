@@ -1,5 +1,6 @@
 <?php
 
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -12,6 +13,10 @@ $test=new Test;
 $f3 = Base::instance();
 $f3->config('tests/tests.ini');
 
+$error_log = getcwd().DIRECTORY_SEPARATOR.$f3->get('TEMP').'php_errors.log';
+ini_set("log_errors", 1);
+ini_set( "error_log", $error_log );
+
 // TEST: load class
 $test->expect(
     class_exists ('wcurl'),
@@ -19,10 +24,13 @@ $test->expect(
 );
 $wcurl = \wcurl::instance();
 
+// pre(getcwd().DIRECTORY_SEPARATOR.$f3->get('TEMP'));
+
 // TEST: build a class and check returned configuration
 $initConfig = $f3->get('wcurl');
 $buildConfig = $wcurl->getOptions();
 foreach($initConfig as $key => $value){
+
     $test->expect(
         array_key_exists($key, $buildConfig) &&
         gettype($value)===gettype($buildConfig[$key]) &&
@@ -95,5 +103,8 @@ foreach ($test->results() as $result) {
         $error = true;
     }
 }
-if($error)
+if($error){
+    echo PHP_EOL."One or more tests failed".PHP_EOL;
+    echo file_get_contents( $error_log );
     exit(255);
+}
