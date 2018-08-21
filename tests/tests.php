@@ -9,6 +9,8 @@ require_once("helpers.php");
 // require_once("../vendor/autoload.php");
 // require_once("../helpers.php");
 
+function hello(){}
+
 // Set up
 $test=new Test;
 $f3 = Base::instance();
@@ -24,6 +26,7 @@ $test->expect(
     '\wcurl class loaded'
 );
 $wcurl = \wcurl::instance();
+$f3->run();
 
 // TEST: build a class and check returned configuration
 $initConfig = $f3->get('wcurl');
@@ -104,5 +107,5 @@ foreach ($test->results() as $result) {
 if($error){
     echo PHP_EOL."One or more tests failed".PHP_EOL;
     // echo file_get_contents( $error_log );
-    exit(255);
+    exit(1);
 }
