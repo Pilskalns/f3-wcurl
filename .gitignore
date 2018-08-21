@@ -2,4 +2,5 @@ composer.lock
 vendor/*
 build/*
 tmp/*
+!**/.gitkeep
 tests/tmp/*
