@@ -1,8 +1,10 @@
 <?php
 
 error_reporting( E_ALL );
+ini_set('log_errors', '1');
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
+ini_set('error_log', 'php_errors.log');
 
 require_once("vendor/autoload.php");
 require_once("helpers.php");
@@ -106,6 +108,6 @@ foreach ($test->results() as $result) {
 }
 if($error){
     echo PHP_EOL."One or more tests failed".PHP_EOL;
-    // echo file_get_contents( $error_log );
+    echo file_get_contents( 'php_errors.log' );
     exit(1);
 }
