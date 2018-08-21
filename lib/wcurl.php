@@ -140,12 +140,8 @@ class wcurl extends \Prefab {
 		if(is_array($options['curlopt']))
 			$this->curlopt = $options['curlopt'];
 
-		if( is_string($options['headers']) ){
-			$this->headers = [trim($options['headers'],'\'\"')];
-		} else if ( is_array($options['headers']) ){
-			foreach ($options['headers'] as $head ) {
-				$this->headers[] = trim($head,'\'\"');
-			}
+		if($options['headers']){
+			$this->headers = $options['headers'];
 		}
 
 		if(is_string($options['useragent'])) {
@@ -267,7 +263,8 @@ class wcurl extends \Prefab {
 		curl_setopt_array($ch, $setparams);
 
 		if(is_array($this->headers)){
-			curl_setopt($ch, CURLOPT_HTTPHEADER, $this->headers);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, 
+						is_array($this->headers)?$this->headers:[$this->headers] );
 			curl_setopt($ch, CURLINFO_HEADER_OUT, true);
 		}
 
