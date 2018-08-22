@@ -10,10 +10,10 @@ before_script:
  - composer install --prefer-dist --no-interaction --no-dev
 
 after_failure:
-  - cat php_errors.log
+  # - cat php_errors.log
   # - php -i
 
-script: php -d display_errors=on tests/tests.php
+script: php -d display_errors=on tests/curl.php
 
 notifications:
    on_success: never
