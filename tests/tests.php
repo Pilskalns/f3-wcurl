@@ -45,12 +45,16 @@ foreach($initConfig as $key => $value){
 if(!$SKIP_NETWORK_REQUESTS){
     // TEST: named route
     $users = $wcurl->get('getusers');
+    if($users['error'])
+        pre($users);
     $test->expect(
         $users['status']['http_code']==200,
         'Named route works'
     );
     // TEST: named route with fill
     $users = $wcurl->get('getuserID', ['id'=>2]);
+    if($users['error'])
+        pre($users);
     $test->expect(
         $users['status']['http_code']==200,
         'Named route with fill'
@@ -58,6 +62,8 @@ if(!$SKIP_NETWORK_REQUESTS){
 
     // TEST: HTTP GET
     $users = $wcurl->get('users');
+    if($users['error'])
+        pre($users);
     $test->expect(
         $users['status']['http_code']==200,
         'Perform HTTP GET request'
@@ -65,6 +71,8 @@ if(!$SKIP_NETWORK_REQUESTS){
 
     // TEST: Receive 404 on GET request
     $users = $wcurl->get('users/23');
+    if($users['error'])
+        pre($users);
     $test->expect(
         $users['status']['http_code']==404,
         'Receive 404 on GET request'
@@ -73,6 +81,8 @@ if(!$SKIP_NETWORK_REQUESTS){
     // TEST: HTTP POST with FORM data
     $formData = ['name'=>'morpheus'];
     $users = $wcurl->post('/users', $formData, null, false );
+    if($users['error'])
+        pre($users);
     $test->expect(
         $users['status']['http_code']==201 &&
         $users['response']['name']==$formData['name'],
@@ -82,6 +92,8 @@ if(!$SKIP_NETWORK_REQUESTS){
     // TEST: HTTP POST with JSON
     // response data check specific to reqres.in API returned format
     $users = $wcurl->post('/users', $formData );
+    if($users['error'])
+        pre($users);
     $test->expect(
         $users['status']['http_code']==201 &&
         array_key_exists( json_encode($formData), $users['response'] ),
@@ -90,6 +102,8 @@ if(!$SKIP_NETWORK_REQUESTS){
 
     // TEST: HTTP DELETE
     $users = $wcurl->delete('/users/2');
+    if($users['error'])
+        pre($users);
     $test->expect(
         $users['status']['http_code']==204,
         'Perform HTTP DELETE request'
@@ -108,6 +122,7 @@ foreach ($test->results() as $result) {
 }
 if($error){
     echo PHP_EOL."One or more tests failed".PHP_EOL;
-    echo file_get_contents( 'php_errors.log' );
+    if(file_exists('php_errors.log'))
+        echo file_get_contents( 'php_errors.log' );
     exit(1);
 }
