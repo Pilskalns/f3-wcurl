@@ -316,7 +316,7 @@ class wcurl extends \Prefab {
 		);
 
 		foreach( $this->curlopt as $opt=>$val ){
-			curl_setopt($ch, constant($opt), constant($val));
+			curl_setopt($ch, constant($opt), $val);
 		}
 
 		$response = curl_exec($ch);

@@ -49,7 +49,7 @@ foreach ($sslVersions as $sslVersion) {
 
     if (curl_exec($ch) === false) {
         $hadError++;
-        echo "==ERROR".PHP_EOL;
+        echo "======= ERROR".PHP_EOL;
         var_dump(curl_error($ch));
     } else {
         curl_close($ch);
