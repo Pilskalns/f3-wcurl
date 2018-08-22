@@ -13,7 +13,7 @@ after_failure:
   # - cat php_errors.log
   # - php -i
 
-script: php -d display_errors=on tests/curl.php
+script: php -d display_errors=on tests/tests.php
 
 notifications:
    on_success: never
