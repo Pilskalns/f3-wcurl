@@ -1,10 +1,10 @@
 language: php
-dist: trusty
 
 php:
   - 7.2
-  - 5.6
-  - 5.4
+  # disabling because of curl/ssl issues https://github.com/travis-ci/travis-ci/issues/6339
+  # - 5.6 
+  # - 5.4
 
 
 before_script:
@@ -15,7 +15,7 @@ after_failure:
   # - cat php_errors.log
   # - php -i
 
-script: php -d display_errors=on tests/tests.php
+script: php tests/tests.php
 
 notifications:
    on_success: never
