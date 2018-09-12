@@ -21,8 +21,10 @@ function hello(){}
 // Set up
 $test=new Test;
 $f3 = Base::instance();
-// $f3->config('tests/tests.ini');
-$f3->config('tests.ini');
+foreach(['tests/tests.ini','tests.ini'] as $file){
+    if(file_exists($file))
+        $f3->config($file);
+}
 $f3->set('DEBUG',3);
 
 $SKIP_NETWORK_REQUESTS = true;
