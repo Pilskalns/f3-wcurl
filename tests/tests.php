@@ -6,10 +6,15 @@ ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 ini_set('error_log', 'php_errors.log');
 
-require_once("vendor/autoload.php");
-require_once("helpers.php");
+// require_once("vendor/autoload.php");
+// require_once("helpers.php");
 // require_once("../vendor/autoload.php");
 // require_once("../helpers.php");
+
+foreach(['vendor/autoload.php', 'helpers.php', '../vendor/autoload.php', '../helpers.php'] as $file){
+    if(file_exists($file))
+        require_once($file);
+}
 
 function hello(){}
 
