@@ -4,10 +4,10 @@
  */
 class wcurl extends \Prefab {
 
-	private $version = 'v0.3';
+	private $version = 'v1.0';
 
 	private $cb_login, $root, $tll, $cookie, $headers, $useragent,
-			$basicauth, $queryToken;
+			$basicauth, $queryToken, $encodeJSON;
 
 	private $curlopt = [];
 	private $rests = [];
@@ -23,34 +23,38 @@ class wcurl extends \Prefab {
 			$f3->error(500, "Passed wcurl options array not found!");
 		}
 
+		$this->useragent = 'F3-wcurl '.$this->version;
+		
 		self::setOptions($options);
 
-	 }
+	}
 	 
 	 /**
 	 * HTTP GET method
 	 * 
-	 * @param string		$url	Relative or named URL
-	 * @param mixed			$fill	Array of url params to fill in
-	 * @param mixed			$ttl	How long to cache response
+	 * @param string		$url		Relative or named URL
+	 * @param mixed			$fill		Array of url params to fill in
+	 * @param array			$options	Override any setting for one request
 	 */
-	public function get($url, $fill = null, $ttl = true){
+	// public function get($url, $fill = null, $ttl = true){
+	public function get($url, $fill = null, $options = []){
 
 		$url = self::fillRESTS($url, $fill);
 
 		$cache = \Cache::instance();
 		$key = \Web::instance()->slug($this->root.$url);
-
+		$ttl = is_int($options['ttl'])?$options['ttl']: $this->ttl;
 
 		if ($ttl && $cache->exists('url_'.$key,$value)) {
 			$value['fromcache'] = true;
 		    return $value;
 		}
-		$request = $this->curl_send(array(
+		$request = $this->curl_send([
 				CURLOPT_URL => $url
-		));
+		], $options);
 		if($ttl && (substr($request['status']['http_code'],0,1)==2) ){
-			$cache->set('url_'.$key, $request, (is_int($ttl)&&$ttl>0)?$ttl:$this->ttl);
+			// $cache->set('url_'.$key, $request, (is_int($ttl)&&$ttl>0)?$ttl:$this->ttl);
+			$cache->set('url_'.$key, $request, $ttl);
 		}
 
 		$value['fromcache'] = false;
@@ -60,16 +64,17 @@ class wcurl extends \Prefab {
 	/**
 	 * HTTP POST method
 	 *
-	 * @param string $url
-	 * @param array $body
-	 * @param array $fill
-	 * @param boolean $encodeJSON
+	 * @param string 	$url
+	 * @param array 	$fill
+	 * @param array 	$body
+	 * @param array		$options	Override any setting for one request
 	 * @return array
 	 */
-	function post($url, $body = null, $fill = null, $encodeJSON = true){
-
+	// function post($url, $body = null, $fill = null, $encodeJSON = true){
+	function post($url, $fill = null, $body = null, $options = []){
 
 		$url = self::fillRESTS($url, $fill);
+		$encodeJSON = is_bool($options['encodeJSON'])?$options['encodeJSON']: $this->encodeJSON;
 
 		if(is_array($body)){
 			if($encodeJSON){
@@ -78,26 +83,26 @@ class wcurl extends \Prefab {
 				$body = http_build_query($body);
 			}
 		}
-		return $this->curl_send(array(
+		return $this->curl_send([
 				CURLOPT_URL => $url,
 				CURLOPT_POST => true,
 				CURLOPT_POSTFIELDS => $body
-		));
+		], $options);
 	}
 
 	/**
 	 * HTTP DELETE method
 	 *
-	 * @param string $url
-	 * @param array $body
-	 * @param array $fill
-	 * @param boolean $encodeJSON
+	 * @param string 	$url
+	 * @param array 	$fill
+	 * @param array 	$body
+	 * @param array		$options	Override any setting for one request
 	 * @return array
 	 */
-	function delete($url, $body = null, $fill = null, $encodeJSON = true){
-
+	function delete($url, $fill = null, $body = null, $options = []){
 
 		$url = self::fillRESTS($url, $fill);
+		$encodeJSON = is_bool($options['encodeJSON'])?$options['encodeJSON']: $this->encodeJSON;
 
 		if(is_array($body)){
 			if($encodeJSON){
@@ -106,11 +111,11 @@ class wcurl extends \Prefab {
 				$body = http_build_query($body);
 			}
 		}
-		return $this->curl_send(array(
+		return $this->curl_send([
 				CURLOPT_URL => $url,
 				CURLOPT_POSTFIELDS => $body,
 				CURLOPT_CUSTOMREQUEST => 'DELETE'
-		));
+		], $options);
 	}
 
 	/**
@@ -123,12 +128,14 @@ class wcurl extends \Prefab {
 	public function setOptions($options){
 		global $f3;
 
-		if(array_key_exists('root', $options)) $this->root = $options['root'];
-		self::setCookie();
+		if(array_key_exists('root', $options)){
+			$this->root = $options['root'];
+			self::setCookie();
+		}
 
 		if(array_key_exists('cb_login', $options)) $this->cb_login = $options['cb_login'];
 
-		if( !self::setTTL($options['ttl']) ){
+		if( isset($options['ttl']) && !self::setTTL($options['ttl']) ){
 			$this->ttl = 60;
 		}
 
@@ -144,9 +151,12 @@ class wcurl extends \Prefab {
 
 		if(is_string($options['useragent'])) {
 			$this->useragent = $options['useragent'];
-		} else {
-			$this->useragent = 'f3-wcurl '.$this->version;
-		}
+		} //else {
+			//$this->useragent = 'f3-wcurl '.$this->version;
+		//}
+
+		if(is_bool($options['encodeJSON']))
+			$this->encodeJSON = $options['encodeJSON'];
 	}
 
 	/**
@@ -163,6 +173,7 @@ class wcurl extends \Prefab {
 		$options['curlopt']=$this->curlopt;
 		$options['headers']=$this->headers;
 		$options['useragent']=$this->useragent;
+		$options['encodeJSON']=$this->encodeJSON;
 		return $options;
 	}
 
@@ -185,10 +196,10 @@ class wcurl extends \Prefab {
 					break;
 				case 'cb_login':
 				case 'tll':
-				case 'cookie':
 				case 'useragent':
 				case 'basicauth':
 				case 'queryToken':
+				case 'encodeJSON':
 					$this->{$opt}=null;
 					break;
 				case 'curlopt':
@@ -261,12 +272,38 @@ class wcurl extends \Prefab {
 		return $url;
 	}
 
-	private function curl_send($params = array(), $nested = false){
+	private function curl_send($params, $extraOptions, $nested = false){
 		global $f3;
 		set_time_limit(30);
 
-		$default = array(
-			CURLOPT_USERAGENT => $this->useragent,
+		/*
+			Order, how settings should be applied,
+			thus overriding/merging previous
+
+			1. INI
+			2. INI.curlopt
+			3. EXTRA
+			4. EXTRA.curlopt
+		*/
+
+		$options = self::getOptions();
+
+		foreach($options['curlopt'] as $k => $v){
+			unset($options['curlopt'][$k]);
+			$options['curlopt'][is_int($k)?$k:constant($k)]=$v;
+		}
+
+		if( isset($extraOptions['curlopt']) ){
+			foreach($extraOptions['curlopt'] as $k => $v){
+				unset($extraOptions['curlopt'][$k]);
+				$extraOptions['curlopt'][is_int($k)?$k:constant($k)]=$v;
+			}
+		}
+
+		$mergedOptions = array_replace_recursive($options, $extraOptions);
+
+		$curlopts = [
+			CURLOPT_USERAGENT => $mergedOptions['useragent'],
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_SSL_VERIFYPEER => true,
 			CURLOPT_SSL_VERIFYHOST => 2,
@@ -274,31 +311,39 @@ class wcurl extends \Prefab {
 			CURLOPT_COOKIEJAR	=>	realpath($this->cookie),
 			CURLOPT_COOKIEFILE	=>	realpath($this->cookie),
 			CURLOPT_HTTP_VERSION=>	CURL_HTTP_VERSION_1_0,
-		);
+			CURLINFO_HEADER_OUT => true,
+		];
 
-		if (strlen($this->basicauth)){
-			$default[CURLOPT_USERPWD]=$this->basicauth;
+		if (strlen($mergedOptions['basicauth'])){
+			unset($curlopts[CURLOPT_USERPWD]);
+			$curlopts[CURLOPT_USERPWD]=$mergedOptions['basicauth'];
 		}
 
-		$url =	trim($this->root,'/').
+		if(is_array($mergedOptions['headers'])){
+			unset($curlopts[CURLOPT_HTTPHEADER]);
+			$curlopts[CURLOPT_HTTPHEADER]=$mergedOptions['headers'];
+		}
+
+		$mergedOptions['curlopt']= array_replace_recursive($curlopts, $mergedOptions['curlopt']);
+
+
+		// TODO do proper URL build combining root, path and proper appeding parameters after '?'
+		$url =	trim($mergedOptions['root'],'/').
 				'/'.trim($params[CURLOPT_URL],'/').
 				($this->queryToken?'?'.$this->queryToken:'');
 
+				
+		// new object required so, in case of nested request, untouched origin can be passed again
 		$setparams = $params;
 		unset($setparams[CURLOPT_URL]);
 		$setparams[CURLOPT_URL]=$url;
 
 		$ch = curl_init();
 
-		curl_setopt_array($ch, $default);
+		curl_setopt_array($ch, $mergedOptions['curlopt']);
 		curl_setopt_array($ch, $setparams);
 
-		if(is_array($this->headers)){
-			curl_setopt($ch, CURLOPT_HTTPHEADER, 
-						is_array($this->headers)?$this->headers:[$this->headers] );
-			curl_setopt($ch, CURLINFO_HEADER_OUT, true);
-		}
-
+		// following function from Stack Overflow or smth
 		$headers = [];
 		curl_setopt($ch, CURLOPT_HEADERFUNCTION,
 			function($curl, $header) use (&$headers){
@@ -315,10 +360,6 @@ class wcurl extends \Prefab {
 			}
 		);
 
-		foreach( $this->curlopt as $opt=>$val ){
-			curl_setopt($ch, constant($opt), $val);
-		}
-
 		$response = curl_exec($ch);
 		$status = curl_getinfo($ch);
 
@@ -326,9 +367,9 @@ class wcurl extends \Prefab {
 			switch (trim($status['http_code'])){
 				case 401:
 				case 403:
-					if($this->cb_login){
-						if(call_user_func($this->cb_login))
-							return $this->curl_send($params, true);
+					if($mergedOptions['cb_login']){
+						if(call_user_func($mergedOptions['cb_login']))
+							return $this->curl_send($params, $extraOptions, true);
 					}
 					break;
 			}

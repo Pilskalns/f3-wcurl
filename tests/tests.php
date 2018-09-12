@@ -16,11 +16,11 @@ function hello(){}
 // Set up
 $test=new Test;
 $f3 = Base::instance();
-$f3->config('tests/tests.ini');
-// $f3->config('tests.ini');
+// $f3->config('tests/tests.ini');
+$f3->config('tests.ini');
 $f3->set('DEBUG',3);
 
-// $SKIP_NETWORK_REQUESTS = true;
+$SKIP_NETWORK_REQUESTS = true;
 
 // TEST: load class
 $test->expect(
@@ -28,7 +28,7 @@ $test->expect(
     '\wcurl class loaded'
 );
 $wcurl = \wcurl::instance();
-$f3->run();
+// $f3->run();
 
 // TEST: build a class and check returned configuration
 $initConfig = $f3->get('wcurl');
@@ -41,7 +41,8 @@ foreach($initConfig as $key => $value){
         "Option '$key' configured as expected"
     );
 }
-
+echo "<pre>";
+$users = $wcurl->get('getusers', null, ['ttl'=>0, 'headers'=>'Accept: plaint/text', 'curlopt'=>[CURLOPT_USERAGENT => 'fancy UA'], 'rests'=>['getuserIDtwo' => '/users/%%id%%?page=2']]);
 if(!$SKIP_NETWORK_REQUESTS){
     // TEST: named route
     $users = $wcurl->get('getusers');
@@ -80,7 +81,7 @@ if(!$SKIP_NETWORK_REQUESTS){
 
     // TEST: HTTP POST with FORM data
     $formData = ['name'=>'morpheus'];
-    $users = $wcurl->post('/users', $formData, null, false );
+    $users = $wcurl->post('/users', null, $formData, false );
     if($users['error'])
         pre($users);
     $test->expect(
@@ -91,7 +92,7 @@ if(!$SKIP_NETWORK_REQUESTS){
 
     // TEST: HTTP POST with JSON
     // response data check specific to reqres.in API returned format
-    $users = $wcurl->post('/users', $formData );
+    $users = $wcurl->post('/users', null, $formData );
     if($users['error'])
         pre($users);
     $test->expect(
