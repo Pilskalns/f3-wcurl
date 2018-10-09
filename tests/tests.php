@@ -6,11 +6,6 @@ ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 ini_set('error_log', 'php_errors.log');
 
-// require_once("vendor/autoload.php");
-// require_once("helpers.php");
-// require_once("../vendor/autoload.php");
-// require_once("../helpers.php");
-
 foreach(['vendor/autoload.php', 'helpers.php', '../vendor/autoload.php', '../helpers.php'] as $file){
     if(file_exists($file))
         require_once($file);
@@ -27,7 +22,7 @@ foreach(['tests/tests.ini','tests.ini'] as $file){
 }
 $f3->set('DEBUG',3);
 
-$SKIP_NETWORK_REQUESTS = true;
+// $SKIP_NETWORK_REQUESTS = true;
 
 // TEST: load class
 $test->expect(
@@ -45,11 +40,11 @@ foreach($initConfig as $key => $value){
         array_key_exists($key, $buildConfig) &&
         gettype($value)===gettype($buildConfig[$key]) &&
         $value===$buildConfig[$key],
-        "Option '$key' configured as expected"
+        "Option '$key' config received as expected"
     );
 }
-echo "<pre>";
-$users = $wcurl->get('getusers', null, ['ttl'=>0, 'headers'=>'Accept: plaint/text', 'curlopt'=>[CURLOPT_USERAGENT => 'fancy UA'], 'rests'=>['getuserIDtwo' => '/users/%%id%%?page=2']]);
+echo "<pre>".PHP_EOL;
+// $users = $wcurl->get('getusers', null, ['ttl'=>0, 'headers'=>'Accept: plaint/text', 'curlopt'=>[CURLOPT_USERAGENT => 'fancy UA'], 'rests'=>['getuserIDtwo' => '/users/%%id%%?page=2']]);
 if(!$SKIP_NETWORK_REQUESTS){
     // TEST: named route
     $users = $wcurl->get('getusers');
@@ -88,7 +83,7 @@ if(!$SKIP_NETWORK_REQUESTS){
 
     // TEST: HTTP POST with FORM data
     $formData = ['name'=>'morpheus'];
-    $users = $wcurl->post('/users', null, $formData, false );
+    $users = $wcurl->post('/users', null, $formData, ['encodeJSON'=>false] );
     if($users['error'])
         pre($users);
     $test->expect(
@@ -118,7 +113,7 @@ if(!$SKIP_NETWORK_REQUESTS){
     );
 }
 
-// Display the results; not MVC but let's keep it simple
+// Display the results
 $error = false;
 foreach ($test->results() as $result) {
     if ($result['status'])

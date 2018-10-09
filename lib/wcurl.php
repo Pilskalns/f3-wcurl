@@ -9,8 +9,7 @@ class wcurl extends \Prefab {
 	private $cb_login, $root, $tll, $cookie, $headers, $useragent,
 			$basicauth, $queryToken, $encodeJSON;
 
-	private $curlopt = [];
-	private $rests = [];
+	private $curlopt, $rests, $stats = [];
 
 	function __construct($identity = 'wcurl') {
 		global $f3;
@@ -39,6 +38,8 @@ class wcurl extends \Prefab {
 	// public function get($url, $fill = null, $ttl = true){
 	public function get($url, $fill = null, $options = []){
 
+		$this->stats['request_types']['get']++;
+
 		$url = self::fillRESTS($url, $fill);
 
 		$cache = \Cache::instance();
@@ -47,6 +48,7 @@ class wcurl extends \Prefab {
 
 		if ($ttl && $cache->exists('url_'.$key,$value)) {
 			$value['fromcache'] = true;
+			$this->stats['requests_from_cache']++;
 		    return $value;
 		}
 		$request = $this->curl_send([
@@ -72,6 +74,8 @@ class wcurl extends \Prefab {
 	 */
 	// function post($url, $body = null, $fill = null, $encodeJSON = true){
 	function post($url, $fill = null, $body = null, $options = []){
+
+		$this->stats['request_types']['post']++;
 
 		$url = self::fillRESTS($url, $fill);
 		$encodeJSON = is_bool($options['encodeJSON'])?$options['encodeJSON']: $this->encodeJSON;
@@ -100,6 +104,8 @@ class wcurl extends \Prefab {
 	 * @return array
 	 */
 	function delete($url, $fill = null, $body = null, $options = []){
+
+		$this->stats['request_types']['delete']++;
 
 		$url = self::fillRESTS($url, $fill);
 		$encodeJSON = is_bool($options['encodeJSON'])?$options['encodeJSON']: $this->encodeJSON;
@@ -195,7 +201,8 @@ class wcurl extends \Prefab {
 					self::setCookie();
 					break;
 				case 'cb_login':
-				case 'tll':
+				case 'ttl':
+				case 'headers':
 				case 'useragent':
 				case 'basicauth':
 				case 'queryToken':
@@ -208,6 +215,14 @@ class wcurl extends \Prefab {
 					break;
 			}
 		}
+	}
+
+	/**
+	 * Return stats of actions performed like total cURL requests sent
+	 *
+	 */
+	public function getStats(){
+		return $this->stats;
 	}
 
 	// HTTP request methods end
@@ -362,6 +377,8 @@ class wcurl extends \Prefab {
 
 		$response = curl_exec($ch);
 		$status = curl_getinfo($ch);
+		$this->stats['curl_exec_count']++;
+		$this->stats['http_code_count'][trim($status['http_code'])]++;
 
 		if(!$nested){
 			switch (trim($status['http_code'])){
