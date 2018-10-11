@@ -28,6 +28,8 @@ $wcurl = \wcurl::instance([$iniName = 'wcurl' | $optionsArray]);
 
 ### Options array
 
+This fairly simple array structure defines inner workings of wcurl:
+
 name 		| type 		| default 	| description
 ----		|-----		|--------	|------------
 **root**	| string	| _null_	| Remote API root, which is used to build request URI.
@@ -41,6 +43,46 @@ encodeJSON	| boolean	| true		| Weather serialize POST body as JSON, setting `fal
 curlopt		| array		| [ ]		| [RAW cURL settings](http://php.net/manual/en/function.curl-setopt.php) RAW cURL settings array for outright control, with  `key => val` where key can be either constant or either string name of it
 rests		| array		| [ ]		| `key => val` table for URL building helpers (see Examples section)
 
+### updating options
+
+#### setOptions
+To set any option from table above, pass `key => val` array with one or more options.
+
+``` php
+$wcurl->setOptions(
+	[
+		'useragent' 	= > 'F3-wcurl API integration',
+		'encodeJSON' 	= > false,
+		'ttl' 			= > 300,
+		// etc
+	]
+);
+```
+Only options you pass will be updated, everything else will stay in previous/default state.
+
+#### clearOptions
+To clear one or more options, pass name or array list of keys you wish to reset to defaults:
+
+``` php
+$wcurl->clearOptions([ 'useragent', 'ttl' /*, ... etc */ ]);
+```
+#### getOptions
+To get full array of options that represents current state of wcurl class:
+
+``` php
+$wcurl->clearOptions();
+```
+Returned multi-dimension array should be compatible to create exactly the same class as the one extracted from.
+
+#### getStats
+
+Will return statistics how many requests are executed since class is created, what/how many http responses received and how many served from cache.
+
+``` php
+$wcurl->getStats();
+```
+
+------------------
 
 ### HTTP functions
 
@@ -73,6 +115,8 @@ $response = $wcurl->delete( string $url, array $body = null [, array $fill = nul
 ```
 
 UFBO - Url, Fill, Body, Options
+
+------------------
 
 ### Using table of _rests_ (REST pointS)
 
@@ -109,7 +153,6 @@ $wcurl->setOptions(
 );
 ```
 
-
 #### Use named paths
 
 To use named route, pass it's name instead of full path
@@ -138,9 +181,13 @@ $wcurl->post('updateEmail', 					// path shorthand to resolve name
 		);
 ```
 
+------------------
+
 ### Using INI configuration
 
 If you put all configuration in your main `ini` file, class can be initialized only on first required use of it. I.e. when your code decides to send get(). At that moment, if class is not registered in Prefab, it will be built from INI config exactly as needed.
+
+**For full list of options refer to Options Array table few scrolls above.**
 
 ``` ini
 [wcurl]
@@ -164,6 +211,8 @@ useragent = Big Falcon Rocket
 getUsers=/lists/members/all/pages
 getOneUser=/lists/members/%%memberID%%/pages
 ```
+
+------------------
 
 ### Examples
 
