@@ -7,7 +7,8 @@ class wcurl extends \Prefab {
 	private $version = 'v1.0';
 
 	private $cb_login, $root, $tll, $cookie, $headers, $useragent,
-			$basicauth, $queryToken, $encodeJSON;
+			$basicauth, $queryToken;
+	private $encodeJSON = true;
 
 	private $curlopt, $rests, $stats = [];
 
@@ -200,13 +201,15 @@ class wcurl extends \Prefab {
 					$this->{$opt}=null;
 					self::setCookie();
 					break;
+				case 'encodeJSON':
+					$this->{$opt}=true;
+					break;
 				case 'cb_login':
 				case 'ttl':
 				case 'headers':
 				case 'useragent':
 				case 'basicauth':
 				case 'queryToken':
-				case 'encodeJSON':
 					$this->{$opt}=null;
 					break;
 				case 'curlopt':
