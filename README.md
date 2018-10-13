@@ -1,6 +1,8 @@
 # F3-wcurl
 
-[![Master Status](https://travis-ci.com/Pilskalns/f3-wcurl.svg?branch=master)](https://travis-ci.com/Pilskalns/f3-wcurl)
+master | dev
+-------|-----
+[![Master Status](https://travis-ci.com/Pilskalns/f3-wcurl.svg?branch=master)](https://travis-ci.com/Pilskalns/f3-wcurl) | [![Dev Status](https://travis-ci.com/Pilskalns/f3-wcurl.svg?branch=dev)](https://travis-ci.com/Pilskalns/f3-wcurl)
 
 A Fat Free Framework plugin: Bridge between your code and external REST API. F3-wcurl acts as a logical abstraction layer for cURL, which handles authentication and sucess response caching.
 
