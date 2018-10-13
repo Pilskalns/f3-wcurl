@@ -23,6 +23,5 @@
 		"classmap": ["lib/"]
 	},
     "require-dev": {
-        "cvuorinen/phpdoc-markdown-public": "^0.2.0"
     }
 }
