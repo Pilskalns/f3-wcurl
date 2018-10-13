@@ -1,0 +1,22 @@
+language: php
+
+php:
+  - 7.2
+  # disabling because of curl/ssl issues https://github.com/travis-ci/travis-ci/issues/6339
+  # - 5.6 
+  # - 5.4
+
+
+before_script:
+ - if [ -n "$GITHUB_TOKEN" ]; then composer config github-oauth.github.com ${GITHUB_TOKEN}; fi;
+ - composer install --prefer-dist --no-interaction --no-dev
+
+after_failure:
+  # - cat php_errors.log
+  # - php -i
+
+script: php tests/tests.php
+
+notifications:
+   on_success: never
+   on_failure: never

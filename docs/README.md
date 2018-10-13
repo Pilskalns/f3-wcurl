@@ -1,16 +1,21 @@
 # F3-wcurl
 
+[![Master Status](https://travis-ci.com/Pilskalns/f3-wcurl.svg?branch=master)](https://travis-ci.com/Pilskalns/f3-wcurl)
+[![Dev Status](https://travis-ci.com/Pilskalns/f3-wcurl.svg?branch=dev)](https://travis-ci.com/Pilskalns/f3-wcurl)
+
 ## Table of Contents
 
-* [wcurl](#wcurl)
-    * [__construct](#__construct)
-    * [get](#get)
-    * [post](#post)
-    * [delete](#delete)
-    * [setOptions](#setoptions)
-    * [setLogin](#setlogin)
-    * [setBasicAuth](#setbasicauth)
-    * [setQueryToken](#setquerytoken)
+- [F3-wcurl](#f3-wcurl)
+    - [Table of Contents](#table-of-contents)
+    - [wcurl](#wcurl)
+        - [__construct](#construct)
+        - [get](#get)
+        - [post](#post)
+        - [delete](#delete)
+        - [setOptions](#setoptions)
+        - [setLogin](#setlogin)
+        - [setBasicAuth](#setbasicauth)
+        - [setQueryToken](#setquerytoken)
 
 ## wcurl
 

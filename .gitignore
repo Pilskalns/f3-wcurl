@@ -1,3 +1,7 @@
 composer.lock
 vendor/*
 build/*
+tmp/*
+!**/.gitkeep
+tests/tmp/*
+php_errors.log
