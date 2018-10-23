@@ -14,13 +14,13 @@ Over the time I've had need to quickly build tools and scripts that had one esse
 
 Even though you have great control over and access to cURL options, F3-wcurl does not force you to do so. It lets focus on the request itself, what does it change and receive in return. As a plugin for F3 ecosystem, it naturally got few cool dependencies - `Prefab`, `Cache` and `Web` (not for cURL requests themselves).
 
-### Iniate the class
+### Initiate the class
 
 F3 class is built from associative array of relevant settings. Array can be passed from either code directly, or either from INI file (imported to F3 before building F3-wcurl) and stored in the [F3 hive](https://fatfreeframework.com/3.6/base).
 
 F3-wcurl uses F3's Prefab and Cache, which allows same wcurl object to be called anywhere from the code and quick response turnover.
 
-On default, F3-wcurl will search for 'wcurl' key in F3 hive, but INI can conviniently hold settings for multiple different REST API implementations.
+On default, F3-wcurl will search for `wcurl` key in F3 hive, but INI can conviniently hold settings for multiple different REST API implementations.
 
 ``` php
 $wcurl = \wcurl::instance([$iniName = 'wcurl' | $optionsArray]);
@@ -88,6 +88,8 @@ $wcurl->getStats();
 
 ### HTTP functions
 
+Currently supported functions are GET, POST, PUT, PATCH and DELETE. Though will be adding more as I come over the need to implement them.
+
 #### GET
 
 ``` php
@@ -106,6 +108,22 @@ UFO:
 
 ``` php
 $response = $wcurl->post( string $url, array $body = null [, array $fill = null [, array $options = null ]] );
+```
+
+UFBO - Url, Fill, Body, Options
+
+#### PUT
+
+``` php
+$response = $wcurl->put( string $url, array $body = null [, array $fill = null [, array $options = null ]] );
+```
+
+UFBO - Url, Fill, Body, Options
+
+#### PATCH
+
+``` php
+$response = $wcurl->patch( string $url, array $body = null [, array $fill = null [, array $options = null ]] );
 ```
 
 UFBO - Url, Fill, Body, Options

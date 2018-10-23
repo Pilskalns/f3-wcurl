@@ -126,6 +126,67 @@ class wcurl extends \Prefab {
 	}
 
 	/**
+	 * HTTP PUT method
+	 *
+	 * @param string 	$url
+	 * @param array 	$fill
+	 * @param array 	$body
+	 * @param array		$options	Override any setting for one request
+	 * @return array
+	 */
+	function put($url, $fill = null, $body = null, $options = []){
+
+		$this->stats['request_types']['put']++;
+
+		$url = self::fillRESTS($url, $fill);
+		$encodeJSON = is_bool($options['encodeJSON'])?$options['encodeJSON']: $this->encodeJSON;
+
+		if(is_array($body)){
+			if($encodeJSON){
+				$body = json_encode($body);
+			} else {
+				$body = http_build_query($body);
+			}
+		}
+		return $this->curl_send([
+				CURLOPT_URL => $url,
+				CURLOPT_POSTFIELDS => $body,
+				CURLOPT_CUSTOMREQUEST => 'PUT'
+		], $options);
+	}
+
+
+	/**
+	 * HTTP PATCH method
+	 *
+	 * @param string 	$url
+	 * @param array 	$fill
+	 * @param array 	$body
+	 * @param array		$options	Override any setting for one request
+	 * @return array
+	 */
+	function patch($url, $fill = null, $body = null, $options = []){
+
+		$this->stats['request_types']['patch']++;
+
+		$url = self::fillRESTS($url, $fill);
+		$encodeJSON = is_bool($options['encodeJSON'])?$options['encodeJSON']: $this->encodeJSON;
+
+		if(is_array($body)){
+			if($encodeJSON){
+				$body = json_encode($body);
+			} else {
+				$body = http_build_query($body);
+			}
+		}
+		return $this->curl_send([
+				CURLOPT_URL => $url,
+				CURLOPT_POSTFIELDS => $body,
+				CURLOPT_CUSTOMREQUEST => 'PATCH'
+		], $options);
+	}
+
+	/**
 	 * Change wcurl options by passing array of them. Will merge with existing config.
 	 * 
 	 * For initial configuration use new \wcurl

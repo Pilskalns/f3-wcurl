@@ -103,6 +103,28 @@ if(!$SKIP_NETWORK_REQUESTS){
         'Perform HTTP POST request with JSON data'
     );
 
+    // TEST: HTTP PUT with JSON
+    // response data check specific to reqres.in API returned format
+    $users = $wcurl->put('/users', null, $formData );
+    if($users['error'])
+        pre($users);
+    $test->expect(
+        $users['status']['http_code']==200 &&
+        array_key_exists( json_encode($formData), $users['response'] ),
+        'Perform HTTP PUT request with JSON data'
+    );
+
+    // TEST: HTTP PATCH with JSON
+    // response data check specific to reqres.in API returned format
+    $users = $wcurl->patch('/users', null, $formData );
+    if($users['error'])
+        pre($users);
+    $test->expect(
+        $users['status']['http_code']==200 &&
+        array_key_exists( json_encode($formData), $users['response'] ),
+        'Perform HTTP PATCH request with JSON data'
+    );
+
     // TEST: HTTP DELETE
     $users = $wcurl->delete('/users/2');
     if($users['error'])
