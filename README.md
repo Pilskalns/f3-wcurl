@@ -1,3 +1,7 @@
+### This plugin at the moment is unmaintained and almost certainly will stay so.
+#### The projects from me that depended on this have either become obsolete or found other forms and shapes i.e. as Lambda functions.
+##### Thanks F3 developers for the framework, it was fun time learning it and building automation stuff that was running for years without need to touch. I will archive this repo once the last project running will be taken offline. Please feel free to fork. 
+
 # F3-wcurl
 
 master | dev
